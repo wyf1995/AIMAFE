@@ -1,4 +1,4 @@
-Copyright (C) 2019 Yufei Wang(willem@csu.edu.cn)
+Copyright (C) 2019 Yufei Wang(willem@csu.edu.cn) Jin Liu (liujin06@csu.edu.cn)
 
 Package Title:Autism spectrum disorder identification with multi-atlas deep feature representation and ensemble learning
 
