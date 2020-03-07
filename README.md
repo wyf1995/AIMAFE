@@ -36,7 +36,17 @@ This project must run in python==2.7, The following steps should be taken to run
  
         python nn_evaluate --whole dosenbach160
  
- 6. Using voting strategy based on three results of different feature sets
- 
+ 6. Using voting strategy based on three results of different feature sets.
+       python Voting.py
 
 The above step should be performed separately. Until we get three results based on three brain atlases, then use voting to perform final ASD identification.
+
+
+
+
+In addition, due the training process will cost a lot of time. Therefore, we put on a sample. We have trained the dataset and get the predict label of each brain atlas. You can dirctly run the Voting.nn for convenience.
+
+The "data" folder is has five columns. The first column is the subjects name of subjects, the second column is the true label, the third column is the predict label of cc200, the fourth column is the predict label of aal, the fifth column is the predict label of dosenbach160. 
+
+
+
