@@ -588,12 +588,13 @@ def run_nn(hdf5, experiment, code_size_1, code_size_2,code_size_3):
     print(type(hdf5))
 
     # [hdf5.encode('utf-8') for ttt in hdf5]
-    exp_storage = hdf5["experiments"]["aal_whole"]
+    exp_storage = hdf5["experiments"]["cc200_whole"]
+    #exp_storage = hdf5["experiments"]["aal_whole"]
+    #exp_storage = hdf5["experiments"]["dosenbach160_whole"]
 
 
     print type(exp_storage)
 
-    print  "2222222222222222222222222"
 
     for fold in exp_storage:
 
@@ -606,20 +607,51 @@ def run_nn(hdf5, experiment, code_size_1, code_size_2,code_size_3):
         X_valid, y_valid, \
         X_test, y_test,test_pid = load_fold(hdf5["patients"], exp_storage, fold)
 
-        ae1_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
+        ae1_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
             "experiment": experiment_cv,
         })
-        ae2_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
-            "experiment": experiment_cv,
-        })
-
-        ae3_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
-            "experiment": experiment_cv,
-        })
-        nn_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
+        ae2_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
             "experiment": experiment_cv,
         })
 
+        ae3_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
+            "experiment": experiment_cv,
+        })
+        nn_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
+            "experiment": experiment_cv,
+        })
+        
+        
+        
+#         ae1_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+#         ae2_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+
+#         ae3_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+#         nn_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+
+        
+#         ae1_model_path = format_config("./data/dosenbach160_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+#         ae2_model_path = format_config("./data/dosenbach160_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+
+#         ae3_model_path = format_config("./data/dosenbach160_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+#         nn_model_path = format_config("./data/dosenbach160_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
+#             "experiment": experiment_cv,
+#         })
+        
         reset()
 
         # Run first autoencoder
@@ -668,10 +700,12 @@ if __name__ == "__main__":
 
     arguments = docopt(__doc__)
 
-    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed0.csv"
+    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed949.csv"
     pheno = load_phenotypes(pheno_path)
 
-    hdf5 = hdf5_handler("./data/abide_aal_tichu.hdf5", "a")
+    hdf5 = hdf5_handler("./data/abide_cc200_tichu.hdf5", "a")
+    #hdf5 = hdf5_handler("./data/abide_aal_tichu.hdf5", "a")
+    #hdf5 = hdf5_handler("./data/abide_dosenbach160_tichu.hdf5", "a")
 
     valid_derivatives = ["cc200", "aal", "ez", "ho", "tt", "dosenbach160"]
     derivatives = [derivative for derivative
@@ -719,7 +753,6 @@ if __name__ == "__main__":
         print experiments
 
     # [hdf5.encode('utf-8') for ttt in hdf5]
-    print "hahahahahahhaah"
 
     for experiment in experiments:
         run_nn(hdf5, experiment, code_size_1, code_size_2, code_size_3)
