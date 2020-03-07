@@ -5,7 +5,13 @@ Package Title:Autism spectrum disorder identification with multi-atlas deep feat
 Description: This package aims to achieve the automatically diagnose subjects with ASD based on multi-atlas deep feature representation and ensemble learning derived from their Resting-state functional magnetic resonance imaging (Rs-fMRI) brain scans.
 
 The files in this project:
+
+download_abide.py   download dataset
+
+prepare_data.py      prepare data
+
 nn.py  The pretraining code
+
 nn_evaluate.py The classification code for each feature set based on brain atlas
 
 
