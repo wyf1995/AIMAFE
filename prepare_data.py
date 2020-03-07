@@ -122,10 +122,12 @@ if __name__ == "__main__":
     arguments = docopt(__doc__)
 
     folds = int(arguments["--folds"])
-    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed_871.csv"
+    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed949.csv"
     pheno = load_phenotypes(pheno_path)
 
-    hdf5 = hdf5_handler("./data/abide_aal_871.hdf5", "a")
+    hdf5 = hdf5_handler("./data/abide_aal_tichu.hdf5", "a")
+    hdf5 = hdf5_handler("./data/abide_cc200_tichu.hdf5", "a")
+    hdf5 = hdf5_handler("./data/abide_dosenbach160_tichu.hdf5", "a")
 
     valid_derivatives = ["cc200", "aal", "ez", "ho", "tt", "dosenbach160"]
     derivatives = [derivative for derivative in arguments["<derivative>"] if derivative in valid_derivatives]
