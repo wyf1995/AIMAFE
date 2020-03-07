@@ -8,6 +8,8 @@ The files in this project:
 
 nn.py  The pretraining code
 
+Voting.py the voting code
+
 nn_evaluate.py The classification code for each feature set based on brain atlas
 
 
