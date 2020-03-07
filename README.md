@@ -49,7 +49,7 @@ This project must run in python==2.7, The following steps should be taken to run
  
         python nn_evaluate --whole dosenbach160
  
- 6. Using Voting strategy based on three results of different feature sets
- 
+ 6. Using voting strategy based on three results of different feature sets
  
 
+The above step should be performed separately. Until we get three results based on three brain atlases, then use voting to perform final ASD identification.
