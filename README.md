@@ -12,6 +12,7 @@ nn_evaluate.py The classification code for each feature set based on brain atlas
 How to run this project:
 This project must run in python==2.7, The following steps should be taken to run this project:
 1. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
+
   python nn.py --whole --cc200
   
   python nn.py --whole --aal
