@@ -14,7 +14,7 @@ nn_evaluate.py The classification code for each feature set based on brain atlas
 How to run this project:
 This project must run in python==2.7, The following steps should be taken to run this project:
 
-1. The dataset(hdf5) is put on the "release",you need put the three dataset in "data" folder.
+1. The dataset(hdf5) is put on the "release",you need to put the three dataset in "data" folder.
 
 2. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
 
