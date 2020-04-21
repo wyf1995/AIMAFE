@@ -16,9 +16,11 @@ nn_evaluate.py The classification code for each feature set based on brain atlas
 How to run this project:
 This project must run in python==2.7, The following steps should be taken to run this project:
 
-1. Run prepare_data.py to download the raw data and compute the correlation. Then you can get the hdf5 files. But we prepare the hdf5 files in advance. The dataset(hdf5) is put on the "release",you need to put the three dataset in "data" folder.
+1. Run download_abide.py to download the raw data.
 
-2. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
+2. Run prepare_data.py to  and compute the correlation. Then you can get the hdf5 files. But we prepare the hdf5 files in advance. The dataset(hdf5) is put on the "release", you need to put the three dataset in "data" folder.
+
+3. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
 
         python nn.py --whole --cc200
   
@@ -26,11 +28,11 @@ This project must run in python==2.7, The following steps should be taken to run
   
         python nn.py --whole --dosenbach160
  
-3. Rename the pretaining file for each feature set
+4. Rename the pretaining file for each feature set
 
         python docopptest.py
   
-4. Using multilayer perceptron (MLP) to classify the ASD and TC.
+5. Using multilayer perceptron (MLP) to classify the ASD and TC.
 
         python nn_evaluate --whole cc200
  
@@ -38,7 +40,7 @@ This project must run in python==2.7, The following steps should be taken to run
  
         python nn_evaluate --whole dosenbach160
  
-5. Using voting strategy based on three results of different feature sets.
+6. Using voting strategy based on three results of different feature sets.
 
          python Voting.py
          
