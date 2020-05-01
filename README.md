@@ -18,7 +18,7 @@ This project must run in python==2.7, The following steps should be taken to run
 
 1. Run download_abide.py to download the raw data.
 
-2. Run prepare_data.py to  and compute the correlation. Then you can get the hdf5 files. But we prepare the hdf5 files in advance. The dataset(hdf5) is put on the "release", you need to put the three dataset in "data" folder.
+2. Run prepare_data.py to  and compute the correlation. Then you can get the hdf5 files. But we prepare the hdf5 files in advance. The dataset(hdf5) is put on the "release"(https://github.com/wyf1995/AIMAFE/releases), you need to put the three dataset in "data" folder.
 
 3. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
 
