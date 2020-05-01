@@ -49,7 +49,7 @@ The above step should be performed separately. Until we get three results based 
 
 
 
-In addition, due to the training process will cost a lot of time. Therefore, we put on a sample. We have trained the dataset and get the predict label of each brain atlas. You can dirctly run the Voting.nn for convenience.
+**In addition, due to the training process will cost a lot of time. Therefore, we put on a sample. We have trained the dataset and get the predict label of each brain atlas. You can dirctly run the Voting.nn for convenience.**
 
 The "data" folder (data/phenotypes/results_of_single atlas.csv) is has five columns. The first column is the subjects name of subjects, the second column is the true label (0 means ASD, 1 means TC), the third column is the predict label of cc200, the fourth column is the predict label of aal, the fifth column is the predict label of dosenbach160. 
 
