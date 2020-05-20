@@ -20,19 +20,15 @@ This project must run in python==2.7, The following steps should be taken to run
 
 2. Run prepare_data.py to  and compute the correlation. Then you can get the hdf5 files. But we prepare the hdf5 files in advance. The dataset(hdf5) is put on the "release"(https://github.com/wyf1995/AIMAFE/releases), you need to put the three dataset in "data" folder.
 
-3. Using stacked denoising autoencoder (SDA) to pretrain for each feature set based on single brain atlas
+3. Using stacked denoising autoencoder (SDA) to perform Multi-atlas Deep Feature Representation.
 
         python nn.py --whole --cc200
   
         python nn.py --whole --aal
   
         python nn.py --whole --dosenbach160
- 
-4. Rename the pretaining file for each feature set
-
-        python docopptest.py
   
-5. Using multilayer perceptron (MLP) to classify the ASD and TC.
+4. Using multilayer perceptron (MLP) and ensemble learning to classify the ASD and TC based on single brain atlas.
 
         python nn_evaluate --whole cc200
  
@@ -40,7 +36,7 @@ This project must run in python==2.7, The following steps should be taken to run
  
         python nn_evaluate --whole dosenbach160
  
-6. Using voting strategy based on three results of different feature sets.
+5. Using voting strategy based on three results of different brain atlases feature sets .
 
          python Voting.py
          
