@@ -11,26 +11,15 @@ import math
 def ae(input_size, code_size,
        corruption=0.0, tight=False,
        enc=tf.nn.tanh, dec=tf.nn.tanh):
-    """
 
-    Autoencoder model: input_size -> code_size -> input_size
-    Supports tight weights and corruption.
-
-    """
-
-    # Define data input placeholder
     x = tf.placeholder(tf.float32, [None, input_size])
 
     if corruption > 0.0:
 
-        # Corrupt data based on random sampling
 
         print "corruption"
 
         print corruption
-
-        print "--------------------------------"
-
 
         _x = tf.multiply(x, tf.cast(tf.random_uniform(shape=tf.shape(x),
                                                       minval=0,
@@ -50,21 +39,17 @@ def ae(input_size, code_size,
                 6.0 / math.sqrt(input_size + code_size))
             )
 
-    # Compute activation for encoding
     encode = tf.matmul(_x, W_enc) + b_enc
     if enc is not None:
         encode = enc(encode)
 
-    # Initialize decoder bias
     b_dec = tf.Variable(tf.zeros([input_size]))
     if tight:
 
-        # Tightening using encoder weights
         W_dec = tf.transpose(W_enc)
 
     else:
 
-        # Initialize decoder weights using Glorot method
         W_dec = tf.Variable(tf.random_uniform(
                     [code_size, input_size],
                     -6.0 / math.sqrt(code_size + input_size),
@@ -107,12 +92,6 @@ def ae(input_size, code_size,
 
 
 def nn(input_size, n_classes, layers, init=None):
-    """
-
-    Multi-layer model
-    Supports tight weights and corruption.
-
-    """
 
     # Define data input placeholder
     input = x = tf.placeholder(tf.float32, [None, input_size])
