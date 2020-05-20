@@ -3,19 +3,6 @@
 
 """
 
-Autoencoders evaluation.
-
-Usage:
-  nn_evaluate.py [--whole] [--male] [--threshold] [--leave-site-out] [<derivative> ...]
-  nn_evaluate.py (-h | --help)
-
-Options:
-  -h --help           Show this screen
-  --whole             Run model for the whole dataset
-  --male              Run model for male subjects
-  --threshold         Run model for thresholded subjects
-  --leave-site-out    Prepare data using leave-site-out method
-  derivative          Derivatives to process
 
 """
 
@@ -40,9 +27,9 @@ import xlwt
 
 def nn_results(hdf5, experiment, code_size_1, code_size_2,code_size_3):
 
-    exp_storage = hdf5["experiments"]['dosenbach160_whole']
+    exp_storage = hdf5["experiments"]['cc200_whole']
 
-    experiment="dosenbach160_whole"
+    experiment="cc200_whole"
 
     print exp_storage
 
@@ -78,18 +65,18 @@ def nn_results(hdf5, experiment, code_size_1, code_size_2,code_size_3):
 
         y_test = np.array([to_softmax(n_classes, y) for y in y_test])
 
-        ae1_model_path = format_config("./data/dos_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
+        ae1_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
             "experiment": experiment_cv,
         })
-        ae2_model_path = format_config("./data/dos_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
-            "experiment": experiment_cv,
-        })
-
-        ae3_model_path = format_config("./data/dos_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
+        ae2_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-2.ckpt", {
             "experiment": experiment_cv,
         })
 
-        nn_model_path = format_config("./data/dos_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
+        ae3_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_autoencoder-3.ckpt", {
+            "experiment": experiment_cv,
+        })
+
+        nn_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
             "experiment": experiment_cv,
         })
 
@@ -163,8 +150,6 @@ def nn_results(hdf5, experiment, code_size_1, code_size_2,code_size_3):
 
                 list2.append(output)
 
-
-
                 list.append(y_pred)
 
                 print "-------------------------------------"
@@ -212,7 +197,7 @@ def nn_results(hdf5, experiment, code_size_1, code_size_2,code_size_3):
     for i,row in enumerate(DATA):
         for j,col in enumerate(row):
             booksheet.write(j,i,col)
-    workbook.save('./data/dos_tichu_2500_1250_625_xlst.xls')
+    # workbook.save('./data/dos_tichu_2500_1250_625_xlst.xls')
 
 
     return [experiment] + np.mean(results, axis=0).tolist()
@@ -225,10 +210,10 @@ if __name__ == "__main__":
 
     pd.set_option("display.expand_frame_repr", False)
 
-    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed0.csv"
+    pheno_path = "./data/phenotypes/Phenotypic_V1_0b_preprocessed949.csv"
     pheno = load_phenotypes(pheno_path)
 
-    hdf5 = hdf5_handler("./data/abide_dosenbach160_tichu.hdf5", "a")
+    hdf5 = hdf5_handler("./data/abide_cc200_tichu.hdf5", "a")
 
     valid_derivatives = ["cc200", "aal", "ez", "ho", "tt", "dosenbach160"]
     derivatives = [derivative for derivative
