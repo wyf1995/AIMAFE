@@ -2,20 +2,6 @@
 
 """
 
-Autoencoders training and fine-tuning.
-
-Usage:
-  nn.py [--whole] [--male] [--threshold] [--leave-site-out] [<derivative> ...]
-  nn.py (-h | --help)
-
-Options:
-  -h --help           Show this screen
-  --whole             Run model for the whole dataset
-  --male              Run model for male subjects
-  --threshold         Run model for thresholded subjects
-  --leave-site-out    Prepare data using leave-site-out method
-  derivative          Derivatives to process
-
 """
 
 import tensorflow as tf
@@ -25,10 +11,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '3'
 
 import numpy as np
 
-
-
-
-import string
 from docopt import docopt
 
 from utils import (load_phenotypes, format_config, hdf5_handler, load_fold,
@@ -37,20 +19,9 @@ from utils import (load_phenotypes, format_config, hdf5_handler, load_fold,
 from model import ae, nn
 
 
-
-
-
 def run_autoencoder1(experiment,
                      X_train, y_train, X_valid, y_valid, X_test, y_test,
                      model_path, code_size=2500):
-    """
-
-    Run the first autoencoder.
-    It takes the original data dimensionality and compresses it into `code_size`
-
-    """
-
-    # Hyperparameters
     learning_rate = 0.0001
     sparse = True  # Add sparsity penalty
     sparse_p = 0.2
@@ -67,71 +38,47 @@ def run_autoencoder1(experiment,
        os.path.isfile(model_path + ".meta"):
         return
 
-    # Create model and add sparsity penalty (if requested)
     model = ae(X_train.shape[1], code_size, corruption=corruption, enc=ae_enc, dec=ae_dec)
     if sparse:
         model["cost"] += sparsity_penalty(model["encode"], sparse_p, sparse_coeff)
-
-    # Use GD for optimization of model cost
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(model["cost"])
 
-    # Initialize Tensorflow session
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
-
-        # Define model saver
         saver = tf.train.Saver(model["params"], write_version=tf.train.SaverDef.V2)
-
-        # Initialize with an absurd cost for model selection
         prev_costs = np.array([9999999999] * 3)
 
         for epoch in range(training_iters):
 
-            # Break training set into batches
             batches = range(len(X_train) / batch_size)
             costs = np.zeros((len(batches), 3))
 
             for ib in batches:
-
-                # Compute start and end of batch from training set data array
                 from_i = ib * batch_size
                 to_i = (ib + 1) * batch_size
-
-                # Select current batch
                 batch_xs, batch_ys = X_train[from_i:to_i], y_train[from_i:to_i]
-
-                # Run optimization and retrieve training cost
                 _, cost_train = sess.run(
                     [optimizer, model["cost"]],
                     feed_dict={
                         model["input"]: batch_xs
                     }
                 )
-
-                # Compute validation cost
                 cost_valid = sess.run(
                     model["cost"],
                     feed_dict={
                         model["input"]: X_valid
                     }
                 )
-
-                # Compute test cost
                 cost_test = sess.run(
                     model["cost"],
                     feed_dict={
                         model["input"]: X_test
                     }
                 )
-
                 costs[ib] = [cost_train, cost_valid, cost_test]
-
-            # Compute the average costs from all batches
             costs = costs.mean(axis=0)
             cost_train, cost_valid, cost_test = costs
-
-            # Pretty print training info
             print format_config(
                 "Exp={experiment}, Model=ae1, Iter={epoch:5d}, Cost={cost_train:.6f} {cost_valid:.6f} {cost_test:.6f}",
                 {
@@ -142,8 +89,6 @@ def run_autoencoder1(experiment,
                     "cost_test": cost_test,
                 }
             ),
-
-            # Save better model if optimization achieves a lower cost
             if cost_valid < prev_costs[1]:
                 print "Saving better model"
                 saver.save(sess, model_path)
@@ -156,19 +101,9 @@ def run_autoencoder2(experiment,
                      X_train, y_train, X_valid, y_valid, X_test, y_test,
                      model_path, prev_model_path,
                      code_size=1250, prev_code_size=2500):
-    """
-
-    Run the second autoencoder.
-    It takes the dimensionality from first autoencoder and compresses it into the new `code_size`
-    Firstly, we need to convert original data to the new projection from autoencoder 1.
-
-    """
-
     if os.path.isfile(model_path) or \
        os.path.isfile(model_path + ".meta"):
         return
-
-    # Convert training, validation and test set to the new representation
     prev_model = ae(X_train.shape[1], prev_code_size,
                     corruption=0.0,  # Disable corruption for conversion
                     enc=tf.nn.tanh, dec=None)
@@ -186,7 +121,6 @@ def run_autoencoder2(experiment,
 
     reset()
 
-    # Hyperparameters
     learning_rate = 0.0001
     corruption = 0.9
     ae_enc = tf.nn.tanh
@@ -196,70 +130,42 @@ def run_autoencoder2(experiment,
     batch_size = 10
     n_classes = 2
 
-    # Load model
     model = ae(prev_code_size, code_size, corruption=corruption, enc=ae_enc, dec=ae_dec)
-
-    # Use GD for optimization of model cost
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(model["cost"])
-
-    # Initialize Tensorflow session
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
-
-        # Define model saver
         saver = tf.train.Saver(model["params"], write_version=tf.train.SaverDef.V2)
-
-        # Initialize with an absurd cost for model selection
         prev_costs = np.array([9999999999] * 3)
-
-        # Iterate Epochs
         for epoch in range(training_iters):
-
-            # Break training set into batches
             batches = range(len(X_train) / batch_size)
             costs = np.zeros((len(batches), 3))
 
             for ib in batches:
-
-                # Compute start and end of batch from training set data array
                 from_i = ib * batch_size
                 to_i = (ib + 1) * batch_size
-
-                # Select current batch
                 batch_xs, batch_ys = X_train[from_i:to_i], y_train[from_i:to_i]
-
-                # Run optimization and retrieve training cost
                 _, cost_train = sess.run(
                     [optimizer, model["cost"]],
                     feed_dict={
                         model["input"]: batch_xs
                     }
                 )
-
-                # Compute validation cost
                 cost_valid = sess.run(
                     model["cost"],
                     feed_dict={
                         model["input"]: X_valid
                     }
                 )
-
-                # Compute test cost
                 cost_test = sess.run(
                     model["cost"],
                     feed_dict={
                         model["input"]: X_test
                     }
                 )
-
                 costs[ib] = [cost_train, cost_valid, cost_test]
-
-            # Compute the average costs from all batches
             costs = costs.mean(axis=0)
             cost_train, cost_valid, cost_test = costs
-
-            # Pretty print training info
             print format_config(
                 "Exp={experiment}, Model=ae2, Iter={epoch:5d}, Cost={cost_train:.6f} {cost_valid:.6f} {cost_test:.6f}",
                 {
@@ -270,8 +176,6 @@ def run_autoencoder2(experiment,
                     "cost_test": cost_test,
                 }
             ),
-
-            # Save better model if optimization achieves a lower cost
             if cost_valid < prev_costs[1]:
                 print "Saving better model"
                 saver.save(sess, model_path)
@@ -285,19 +189,9 @@ def run_autoencoder3(experiment,
                      X_train, y_train, X_valid, y_valid, X_test, y_test,
                      model_path, prev_model_path,
                      code_size=625, prev_code_size=1250):
-    """
-
-    Run the second autoencoder.
-    It takes the dimensionality from first autoencoder and compresses it into the new `code_size`
-    Firstly, we need to convert original data to the new projection from autoencoder 1.
-
-    """
-
     if os.path.isfile(model_path) or \
        os.path.isfile(model_path + ".meta"):
         return
-
-    # Convert training, validation and test set to the new representation
     prev_model = ae(X_train.shape[1], prev_code_size,
                     corruption=0.0,  # Disable corruption for conversion
                     enc=tf.nn.tanh, dec=None)
@@ -315,7 +209,6 @@ def run_autoencoder3(experiment,
 
     reset()
 
-    # Hyperparameters
     learning_rate = 0.0001
     corruption = 0.9
     ae_enc = tf.nn.tanh
@@ -325,56 +218,40 @@ def run_autoencoder3(experiment,
     batch_size = 10
     n_classes = 2
 
-    # Load model
     model = ae(prev_code_size, code_size, corruption=corruption, enc=ae_enc, dec=ae_dec)
 
-    # Use GD for optimization of model cost
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(model["cost"])
 
-    # Initialize Tensorflow session
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
 
-        # Define model saver
         saver = tf.train.Saver(model["params"], write_version=tf.train.SaverDef.V2)
 
-        # Initialize with an absurd cost for model selection
         prev_costs = np.array([9999999999] * 3)
 
-        # Iterate Epochs
         for epoch in range(training_iters):
 
-            # Break training set into batches
             batches = range(len(X_train) / batch_size)
             costs = np.zeros((len(batches), 3))
 
             for ib in batches:
 
-                # Compute start and end of batch from training set data array
                 from_i = ib * batch_size
                 to_i = (ib + 1) * batch_size
-
-                # Select current batch
                 batch_xs, batch_ys = X_train[from_i:to_i], y_train[from_i:to_i]
-
-                # Run optimization and retrieve training cost
                 _, cost_train = sess.run(
                     [optimizer, model["cost"]],
                     feed_dict={
                         model["input"]: batch_xs
                     }
                 )
-
-                # Compute validation cost
                 cost_valid = sess.run(
                     model["cost"],
                     feed_dict={
                         model["input"]: X_valid
                     }
                 )
-
-                # Compute test cost
                 cost_test = sess.run(
                     model["cost"],
                     feed_dict={
@@ -383,12 +260,8 @@ def run_autoencoder3(experiment,
                 )
 
                 costs[ib] = [cost_train, cost_valid, cost_test]
-
-            # Compute the average costs from all batches
             costs = costs.mean(axis=0)
             cost_train, cost_valid, cost_test = costs
-
-            # Pretty print training info
             print format_config(
                 "Exp={experiment}, Model=ae3, Iter={epoch:5d}, Cost={cost_train:.6f} {cost_valid:.6f} {cost_test:.6f}",
                 {
@@ -399,8 +272,6 @@ def run_autoencoder3(experiment,
                     "cost_test": cost_test,
                 }
             ),
-
-            # Save better model if optimization achieves a lower cost
             if cost_valid < prev_costs[1]:
                 print "Saving better model"
                 saver.save(sess, model_path)
@@ -408,20 +279,10 @@ def run_autoencoder3(experiment,
             else:
                 print
 
-
-
-
 def run_finetuning(experiment,
                    X_train, y_train, X_valid, y_valid, X_test, y_test,
                    model_path, prev_model_1_path, prev_model_2_path,prev_model_3_path,
                    code_size_1=2500, code_size_2=1250,code_size_3=625):
-    """
-
-    Run the pre-trained NN for fine-tuning, using first and second autoencoders' weights
-
-    """
-
-    # Hyperparameters
     learning_rate = 0.0005
     dropout_1 = 0.6
     dropout_2 = 0.8
@@ -439,17 +300,14 @@ def run_finetuning(experiment,
        os.path.isfile(model_path + ".meta"):
         return
 
-    # Convert output to one-hot encoding
     y_train = np.array([to_softmax(n_classes, y) for y in y_train])
     y_valid = np.array([to_softmax(n_classes, y) for y in y_valid])
     y_test = np.array([to_softmax(n_classes, y) for y in y_test])
 
-    # Load pretrained encoder weights
     ae1 = load_ae_encoder(X_train.shape[1], code_size_1, prev_model_1_path)
     ae2 = load_ae_encoder(code_size_1, code_size_2, prev_model_2_path)
     ae3 = load_ae_encoder(code_size_2, code_size_3, prev_model_3_path)
 
-    # Initialize NN model with the encoder weights
     model = nn(X_train.shape[1], n_classes, [
         {"size": code_size_1, "actv": tf.nn.tanh},
         {"size": code_size_2, "actv": tf.nn.tanh},
@@ -460,7 +318,6 @@ def run_finetuning(experiment,
         {"W": ae3["W_enc"], "b": ae3["b_enc"]},
     ])
 
-    # Place GD + momentum optimizer
     model["momentum"] = tf.placeholder("float32")
     optimizer = tf.train.MomentumOptimizer(learning_rate, model["momentum"]).minimize(model["cost"])
 
@@ -471,22 +328,18 @@ def run_finetuning(experiment,
     )
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
-    # Initialize Tensorflow session
     init = tf.global_variables_initializer()
     with tf.Session() as sess:
         sess.run(init)
 
         # Define model saver
         saver = tf.train.Saver(model["params"], write_version=tf.train.SaverDef.V2)
-
-        # Initialize with an absurd cost and accuracy for model selection
         prev_costs = np.array([9999999999] * 3)
         prev_accs = np.array([0.0] * 3)
 
         # Iterate Epochs
         for epoch in range(training_iters):
 
-            # Break training set into batches
             batches = range(len(X_train) / batch_size)
             costs = np.zeros((len(batches), 3))
             accs = np.zeros((len(batches), 3))
@@ -501,14 +354,9 @@ def run_finetuning(experiment,
 
             for ib in batches:
 
-                # Compute start and end of batch from training set data array
                 from_i = ib * batch_size
                 to_i = (ib + 1) * batch_size
-
-                # Select current batch
                 batch_xs, batch_ys = X_train[from_i:to_i], y_train[from_i:to_i]
-
-                # Run optimization and retrieve training cost and accuracy
                 _, cost_train, acc_train = sess.run(
                     [optimizer, model["cost"], accuracy],
                     feed_dict={
@@ -520,8 +368,6 @@ def run_finetuning(experiment,
                         model["momentum"]: momentum,
                     }
                 )
-
-                # Compute validation cost and accuracy
                 cost_valid, acc_valid = sess.run(
                     [model["cost"], accuracy],
                     feed_dict={
@@ -533,8 +379,6 @@ def run_finetuning(experiment,
 
                     }
                 )
-
-                # Compute test cost and accuracy
                 cost_test, acc_test = sess.run(
                     [model["cost"], accuracy],
                     feed_dict={
@@ -548,16 +392,11 @@ def run_finetuning(experiment,
 
                 costs[ib] = [cost_train, cost_valid, cost_test]
                 accs[ib] = [acc_train, acc_valid, acc_test]
-
-            # Compute the average costs from all batches
             costs = costs.mean(axis=0)
             cost_train, cost_valid, cost_test = costs
 
-            # Compute the average accuracy from all batches
             accs = accs.mean(axis=0)
             acc_train, acc_valid, acc_test = accs
-
-            # Pretty print training info
             print format_config(
                 "Exp={experiment}, Model=mlp, Iter={epoch:5d}, Acc={acc_train:.6f} {acc_valid:.6f} {acc_test:.6f}, Momentum={momentum:.6f}",
                 {
@@ -569,9 +408,6 @@ def run_finetuning(experiment,
                     "momentum": momentum,
                 }
             ),
-
-            # Save better model if optimization achieves a lower accuracy
-            # and avoid initial epochs because of the fluctuations
             if acc_valid > prev_accs[1] and epoch > start_saving_at:
                 print "Saving better model"
                 saver.save(sess, model_path)
@@ -583,18 +419,9 @@ def run_finetuning(experiment,
 
 def run_nn(hdf5, experiment, code_size_1, code_size_2,code_size_3):
 
-    print "1111111111111111111111"
-
-    print(type(hdf5))
-
-    # [hdf5.encode('utf-8') for ttt in hdf5]
     exp_storage = hdf5["experiments"]["cc200_whole"]
     #exp_storage = hdf5["experiments"]["aal_whole"]
     #exp_storage = hdf5["experiments"]["dosenbach160_whole"]
-
-
-    print type(exp_storage)
-
 
     for fold in exp_storage:
 
@@ -620,9 +447,7 @@ def run_nn(hdf5, experiment, code_size_1, code_size_2,code_size_3):
         nn_model_path = format_config("./data/cc200_tichu_2500_1250_625/{experiment}_mlp.ckpt", {
             "experiment": experiment_cv,
         })
-        
-        
-        
+
 #         ae1_model_path = format_config("./data/aal_tichu_2500_1250_625/{experiment}_autoencoder-1.ckpt", {
 #             "experiment": experiment_cv,
 #         })
@@ -680,8 +505,6 @@ def run_nn(hdf5, experiment, code_size_1, code_size_2,code_size_3):
                          code_size=code_size_3)
 
         reset()
-
-
 
         # Run multilayer NN with pre-trained autoencoders
         run_finetuning(experiment_cv,
@@ -756,3 +579,18 @@ if __name__ == "__main__":
 
     for experiment in experiments:
         run_nn(hdf5, experiment, code_size_1, code_size_2, code_size_3)
+
+
+    path = './data/cc200_tichu_2500_1250_625/'
+    # path = './data/aaltichu_2500_1250_625/'
+    # path = './data/dosenbach160_tichu_2500_1250_625/'
+
+    for files in os.listdir(path):
+
+        # filesgai = files[2:11]+files[13:1000]#aal
+        filesgai = files[2:13] + files[15:1000]  # cc200
+        # filesgai = files[2:20] + files[22:1000]  # dos
+
+        os.rename('./data/cc200_tichu_2500_1250_625/' + files, './data/cc200_tichu_2500_1250_625/' + filesgai)
+        # os.rename('./data/aal_tichu_2500_1250_625/'+files, './data/aal_tichu_2500_1250_625/'+filesgai)
+        # os.rename('./data/dosenbach160_tichu_2500_1250_625/'+files, './data/dosenbach160_tichu_2500_1250_625/'+filesgai)
